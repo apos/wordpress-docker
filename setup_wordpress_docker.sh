@@ -41,17 +41,13 @@ NGINX
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-# Platzhalter erzeugen (als www-data)
+# Platzhalter 
 echo "📄 Erzeuge Platzhalter wp-config.php direkt im Container..."
 docker compose exec -T wordpress sh -c 'echo "<?php // placeholder ?>" > /var/www/html/wp-config.php'
 
-# Datei beschreibbar machen für WP-CLI (läuft als root)
 echo "🔧 Setze Schreibrechte auf wp-config.php für WP-CLI..."
-docker compose exec -T wordpress chmod 666 /var/www/html/wp-config.php || true
-
-# Datei entfernen vor WP-CLI
-echo "🧹 Entferne Platzhalter-Datei im Container (vor WP-CLI)..."
-docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
+docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
+docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
 
 # Datenbankverbindung abwarten
 echo "⏳ Warte auf Datenbankverbindung..."
