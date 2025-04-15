@@ -8,11 +8,10 @@ if [ ! -f "$CONFIG_FILE" ]; then
   exit 1
 fi
 source "$CONFIG_FILE"
-
 cd "$PROJECT_DIR"
 
 # nginx.conf erzeugen
-cat <<EOF > nginx.conf
+cat <<NGINX > nginx.conf
 server {
     listen 80;
     server_name ${DOMAIN_IP};
@@ -35,12 +34,20 @@ server {
         deny all;
     }
 }
-EOF
+NGINX
+
+# Platzhalter für wp-config.php (verhindert automatische Erzeugung)
+echo "<?php // placeholder to block auto-generation ?>" > "$PROJECT_DIR/temp-wp-config.php"
 
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-# DB-Verbindung abwarten
+# Platzhalter-Datei im Container löschen
+echo "🧹 Entferne Platzhalter wp-config.php im Container..."
+docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
+rm -f "$PROJECT_DIR/temp-wp-config.php"
+
+# Warten auf Datenbankverbindung
 echo "⏳ Warte auf Datenbankverbindung..."
 for i in {1..30}; do
   if docker compose exec -T db mysql -u"${DB_USER}" -p"${DB_PASS}" -e "SELECT 1;" "${DB_NAME}" &>/dev/null; then
@@ -53,31 +60,11 @@ for i in {1..30}; do
   [[ "$i" == 30 ]] && { echo "❌ DB nicht erreichbar"; exit 1; }
 done
 
-echo "🧹 Entferne evtl. vorhandene wp-config.php (wordpress-Container)..."
-docker compose exec -T wordpress sh -c "rm -f /var/www/html/wp-config.php || true"
-docker compose exec -T wpcli     sh -c "rm -f /var/www/html/wp-config.php || true"
-
+# Schreibrechte setzen
 echo "🔧 Setze Schreibrechte auf /var/www/html (wordpress)..."
 docker compose exec -T wordpress chmod u+w /var/www/html
 
-echo "📄 Lege temporäre wp-config.php im Container an..."
-echo "<?php // placeholder ?>" > "$PROJECT_DIR/temp-wp-config.php"
-docker cp "$PROJECT_DIR/temp-wp-config.php" wp_app:/var/www/html/wp-config.php
-rm "$PROJECT_DIR/temp-wp-config.php"
-
-echo "🔧 Setze Besitzer + Schreibrechte auf wp-config.php (im Container)..."
-docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
-docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
-
-echo "📄 Lege temporäre wp-config.php im Container an..."
-echo "<?php // placeholder to allow wp-cli creation ?>" > temp-wp-config.php
-docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
-rm -f temp-wp-config.php
-
-echo "🔧 Setze Besitzer + Schreibrechte auf wp-config.php (im Container)..."
-docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
-docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
-
+# wp-config.php via WP-CLI erzeugen
 echo "📄 Generiere neue wp-config.php via WP-CLI..."
 docker compose exec -T wpcli wp core config \
   --dbname="${DB_NAME}" \
@@ -103,6 +90,4 @@ fi
 echo ""
 echo "🎉 WordPress wurde erfolgreich eingerichtet!"
 echo "🌍 ➜ Jetzt im Browser öffnen: http://${DOMAIN_IP}:${PORT}/"
-echo "🔐 Admin-Zugang:"
-echo "   Benutzer: ${WP_ADMIN_USER}"
-echo "   Passwort: ${WP_ADMIN_PASS}"
+echo "🔐 Admin-Zugang: ${WP_ADMIN_USER} / ${WP_ADMIN_PASS}"
