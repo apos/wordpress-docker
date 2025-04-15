@@ -45,14 +45,17 @@ echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
 # Platzhalter erzeugen & in Container kopieren
-echo "<?php // placeholder to block auto-generation ?>" > temp-wp-config.php
 echo "📄 Kopiere Platzhalter wp-config.php in wp_app Container..."
+echo "<?php // placeholder to block auto-generation ?>" > temp-wp-config.php
 docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
 
-# Platzhalter wieder löschen
+echo "🔧 Setze korrekte Rechte auf wp-config.php im Container..."
+docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
+docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
+
 echo "🧹 Entferne Platzhalter-Datei lokal + im Container (vor WP-CLI)..."
 rm -f temp-wp-config.php
-docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
+docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
 
 echo "⏳ Warte auf Datenbankverbindung..."
 for i in {1..30}; do
