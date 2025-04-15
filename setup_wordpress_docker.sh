@@ -57,11 +57,17 @@ echo "🧹 Entferne evtl. vorhandene wp-config.php (wordpress-Container)..."
 docker compose exec -T wordpress sh -c "rm -f /var/www/html/wp-config.php || true"
 docker compose exec -T wpcli     sh -c "rm -f /var/www/html/wp-config.php || true"
 
-echo "🔧 Setze Dateiberechtigungen für wordpress..."
-docker compose exec -T wordpress chown -R www-data:www-data /var/www/html
+echo "🔧 Setze Schreibrechte auf /var/www/html (wordpress)..."
+docker compose exec -T wordpress chmod u+w /var/www/html
 
-echo "🔧 Setze Rechte nur für wp-config.php Verzeichnis (ohne Datei anzulegen)..."
-docker compose exec -T wordpress sh -c "chmod u+w /var/www/html"
+echo "📄 Lege temporäre wp-config.php im Container an..."
+echo "<?php // placeholder ?>" > "$PROJECT_DIR/temp-wp-config.php"
+docker cp "$PROJECT_DIR/temp-wp-config.php" wp_app:/var/www/html/wp-config.php
+rm "$PROJECT_DIR/temp-wp-config.php"
+
+echo "🔧 Setze Besitzer + Schreibrechte auf wp-config.php (im Container)..."
+docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
+docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
 
 echo "📄 Generiere neue wp-config.php via WP-CLI..."
 docker compose exec -T wpcli wp core config \
@@ -76,7 +82,7 @@ if docker compose exec -T wpcli wp core is-installed; then
   echo "ℹ️ WordPress ist bereits installiert."
 else
   echo "⚙️ WordPress wird jetzt installiert..."
-  docker compose exec -T wpcli wp core install \
+  docker compose exec -T wpcli env HTTP_HOST=localhost wp core install \
     --url="http://${DOMAIN_IP}:${PORT}" \
     --title="${WP_TITLE}" \
     --admin_user="${WP_ADMIN_USER}" \
@@ -88,4 +94,6 @@ fi
 echo ""
 echo "🎉 WordPress wurde erfolgreich eingerichtet!"
 echo "🌍 ➜ Jetzt im Browser öffnen: http://${DOMAIN_IP}:${PORT}/"
-echo "🔐 Admin: ${WP_ADMIN_USER} / ${WP_ADMIN_PASS}"
+echo "🔐 Admin-Zugang:"
+echo "   Benutzer: ${WP_ADMIN_USER}"
+echo "   Passwort: ${WP_ADMIN_PASS}"
