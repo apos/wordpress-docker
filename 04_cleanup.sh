@@ -19,3 +19,12 @@ echo "✅ wpcli läuft jetzt wieder als www-data (UID 82)."
 # 🧹 Entferne phpinfo-Datei, falls vorhanden
 echo "🧹 Entferne phpinfo-Testdatei (falls vorhanden)..."
 docker compose exec -T wordpress rm -f /var/www/html/phpinfo.php || true
+
+# 🔐 Setze Besitzer und Rechte auf wp-config.php im Anwendungscontainer
+echo "🔐 Setze Besitzer von wp-config.php auf www-data..."
+docker exec -it wp_app chown www-data:www-data /var/www/html/wp-config.php
+
+echo "🔐 Setze Dateirechte von wp-config.php auf 640..."
+docker exec -it wp_app chmod 640 /var/www/html/wp-config.php
+
+echo "✅ Cleanup abgeschlossen."
