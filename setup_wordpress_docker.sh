@@ -44,8 +44,11 @@ echo "<?php // placeholder to block auto-generation ?>" > temp-wp-config.php
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-echo "🧹 Entferne Platzhalter wp-config.php im Container..."
-docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
+echo "📄 Kopiere Platzhalter wp-config.php in wp_app Container..."
+docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
+
+echo "🧹 Entferne Platzhalter-Datei lokal + im Container (vor WP-CLI)..."
+docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
 rm -f temp-wp-config.php
 
 # DB-Verbindung abwarten
