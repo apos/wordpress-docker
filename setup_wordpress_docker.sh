@@ -38,12 +38,15 @@ server {
 }
 NGINX
 
+# 🛡️ Platzhalter lokal erzeugen, um Auto-Erstellung zu blockieren
+echo "📄 Verhindere automatische Generierung von wp-config.php beim ersten Start..."
+echo "<?php // placeholder ?>" > temp-wp-config.php
+
+# 🐳 Docker Container starten (Platzhalter wird ins Volume gelegt)
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-echo "📄 Verhindere automatische Generierung von wp-config.php beim ersten Start..."
-echo "<?php // placeholder ?>" > temp-wp-config.php
-docker compose up -d
+# 🧹 Platzhalter lokal entfernen (nicht mehr nötig)
 rm -f temp-wp-config.php
 
 # Datenbankverbindung abwarten
