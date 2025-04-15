@@ -69,6 +69,15 @@ echo "🔧 Setze Besitzer + Schreibrechte auf wp-config.php (im Container)..."
 docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
 docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
 
+echo "📄 Lege temporäre wp-config.php im Container an..."
+echo "<?php // placeholder to allow wp-cli creation ?>" > temp-wp-config.php
+docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
+rm -f temp-wp-config.php
+
+echo "🔧 Setze Besitzer + Schreibrechte auf wp-config.php (im Container)..."
+docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
+docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
+
 echo "📄 Generiere neue wp-config.php via WP-CLI..."
 docker compose exec -T wpcli wp core config \
   --dbname="${DB_NAME}" \
