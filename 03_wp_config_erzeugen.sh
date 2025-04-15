@@ -23,6 +23,9 @@ done
 echo "🧹 Entferne evtl. vorhandene wp-config.php im Container..."
 docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
 
+echo "🔧 Setze Schreibrechte auf /var/www/html für wp-config.php..."
+docker compose exec -T wordpress chmod u+w /var/www/html
+
 echo "🔧 Erzeuge neue wp-config.php via WP-CLI..."
 docker compose exec -T wpcli wp config create \
   --dbname="${DB_NAME}" \
