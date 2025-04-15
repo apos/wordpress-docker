@@ -27,7 +27,7 @@ echo "🧹 Entferne evtl. vorhandene wp-config.php im Container..."
 docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
 
 echo "📄 Starte WordPress-Installation..."
-docker compose exec -T wpcli env HTTP_HOST=localhost wp core install \
+docker compose exec -T wpcli env HTTP_HOST=localhost wp core install --allow-root \
   --url="http://${DOMAIN_IP}:${PORT}" \
   --title="${WP_TITLE}" \
   --admin_user="${WP_ADMIN_USER}" \
