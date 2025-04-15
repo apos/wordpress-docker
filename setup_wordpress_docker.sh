@@ -38,24 +38,17 @@ server {
 }
 NGINX
 
-# Leere wp-config.php erzeugen (verhindert automatische Erzeugung durch WordPress-Image)
-echo "<?php // placeholder to block auto-generation ?>" > temp-wp-config.php
-
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-# Datei via docker cp in den Container kopieren
-echo "📄 Kopiere Platzhalter wp-config.php in wp_app Container..."
-docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
-
-# Platzhalter-Datei lokal entfernen
-rm -f temp-wp-config.php
-
-# Rechte setzen und Datei sicher entfernen, bevor WP-CLI sie ersetzt
-echo "🔧 Setze Rechte + entferne Platzhalter wp-config.php im Container (vor WP-CLI)..."
-docker compose exec -T wordpress chmod u+w /var/www/html
+# Platzhalter-Datei direkt im Container erzeugen
+echo "📄 Erzeuge Platzhalter wp-config.php direkt im Container..."
+docker compose exec -T wordpress sh -c 'echo "<?php // placeholder ?>" > /var/www/html/wp-config.php'
 docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
 docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
+
+# Platzhalter-Datei vor WP-CLI löschen
+echo "🧹 Entferne Platzhalter-Datei im Container (vor WP-CLI)..."
 docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
 
 # Datenbankverbindung abwarten
