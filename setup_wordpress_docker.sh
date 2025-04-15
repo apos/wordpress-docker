@@ -77,13 +77,20 @@ docker compose exec -T wordpress chmod 666 /var/www/html/wp-config.php || true
 echo "🔍 Prüfe, ob wp-config.php noch existiert (vor WP-CLI)..."
 docker compose exec -T wordpress ls -l /var/www/html/wp-config.php || echo "✅ Keine Datei vorhanden"
 
-echo "📄 Generiere neue wp-config.php via WP-CLI..."
-docker compose exec -T wpcli wp core config \
-  --dbname="${DB_NAME}" \
-  --dbuser="${DB_USER}" \
-  --dbpass="${DB_PASS}" \
-  --dbhost="db:3306" \
-  --skip-check
+echo "📄 Prüfe, ob WordPress installiert ist..."
+if docker compose exec -T wpcli wp core is-installed; then
+  echo "ℹ️ WordPress ist bereits installiert."
+else
+  echo "⚙️ WordPress wird jetzt installiert..."
+  docker compose exec -T wpcli env HTTP_HOST=localhost wp core install \
+    --url="http://${DOMAIN_IP}:${PORT}" \
+    --title="${WP_TITLE}" \
+    --admin_user="${WP_ADMIN_USER}" \
+    --admin_password="${WP_ADMIN_PASS}" \
+    --admin_email="${WP_ADMIN_EMAIL}" \
+    --skip-email
+  echo "✅ WordPress Installation abgeschlossen!"
+fi
 
 # Rechte wieder einschränken
 echo "🔐 Setze sichere Rechte für wp-config.php..."
