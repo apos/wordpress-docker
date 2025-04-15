@@ -27,7 +27,7 @@ echo "🔧 Setze Schreibrechte auf /var/www/html für wp-config.php..."
 docker compose exec -T wpcli chmod 777 /var/www/html || true
 
 echo "🔧 Erzeuge neue wp-config.php via WP-CLI..."
-docker compose exec -T wpcli wp config create \
+docker compose exec -T wpcli wp config create --allow-root \
   --dbname="${DB_NAME}" \
   --dbuser="${DB_USER}" \
   --dbpass="${DB_PASS}" \
