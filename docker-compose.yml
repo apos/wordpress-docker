@@ -45,7 +45,7 @@ services:
       - wordpress
     volumes:
       - wp_data:/var/www/html
-    user: "82:82"  # www-data im CLI-Image hat UID+GID 82
+    user: "0:0"  # root
     entrypoint: ["tail", "-f", "/dev/null"]
 
 volumes:
