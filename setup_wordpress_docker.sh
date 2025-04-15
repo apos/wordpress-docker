@@ -56,6 +56,7 @@ docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
 echo "🧹 Entferne Platzhalter-Datei lokal + im Container (vor WP-CLI)..."
 rm -f temp-wp-config.php
 docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
+docker compose exec -T wordpress chmod u+w /var/www/html
 
 echo "⏳ Warte auf Datenbankverbindung..."
 for i in {1..30}; do
