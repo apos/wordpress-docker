@@ -41,22 +41,10 @@ NGINX
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-# Platzhalter erzeugen
+echo "📄 Verhindere automatische Generierung von wp-config.php beim ersten Start..."
 echo "<?php // placeholder ?>" > temp-wp-config.php
-
-echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
-
-# Platzhalter ins Container-Dateisystem kopieren
-echo "📄 Kopiere Platzhalter wp-config.php in wp_app Container..."
-docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
-
-# Entferne Platzhalter-Datei lokal
 rm -f temp-wp-config.php
-
-# WordPress-Container neustarten → Datei ist nun weg
-echo "🔁 Starte WordPress-Container neu, um Platzhalter zu entfernen..."
-docker compose restart wordpress
 
 # Datenbankverbindung abwarten
 echo "⏳ Warte auf Datenbankverbindung..."
