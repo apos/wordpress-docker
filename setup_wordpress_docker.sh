@@ -46,9 +46,10 @@ echo "<?php // placeholder ?>" > temp-wp-config.php
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-# 🧹 Platzhalter entfernen: lokal + im Container
+# 🧹 Platzhalter entfernen: lokal 
 rm -f temp-wp-config.php
-docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
+echo "📁 Lösche wp-config.php direkt im Docker-Volume (falls vorhanden)..."
+docker volume inspect wordpress-docker_wp_data -f '{{ .Mountpoint }}' | xargs -I{} rm -f {}/wp-config.php || true
 
 # Datenbankverbindung abwarten
 echo "⏳ Warte auf Datenbankverbindung..."
