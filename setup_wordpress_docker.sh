@@ -42,8 +42,8 @@ echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
 # Platzhalter erzeugen (als www-data)
-echo "📄 Erzeuge Platzhalter wp-config.php direkt im Container (als www-data)..."
-docker compose exec -T wordpress sh -c 'echo "<?php // placeholder ?>" | sudo -u www-data tee /var/www/html/wp-config.php > /dev/null'
+echo "📄 Erzeuge Platzhalter wp-config.php direkt im Container..."
+docker compose exec -T wordpress sh -c 'echo "<?php // placeholder ?>" > /var/www/html/wp-config.php'
 
 # Datei beschreibbar machen für WP-CLI (läuft als root)
 echo "🔧 Setze Schreibrechte auf wp-config.php für WP-CLI..."
