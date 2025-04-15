@@ -38,26 +38,31 @@ server {
 }
 NGINX
 
-# Leere wp-config.php erzeugen (um Autogenerierung zu blockieren)
+# Leere wp-config.php erzeugen (verhindert automatische Erzeugung durch WordPress-Image)
 echo "<?php // placeholder to block auto-generation ?>" > temp-wp-config.php
 
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-# Platzhalter erzeugen & in Container kopieren
+# Datei via docker cp in den Container kopieren
 echo "📄 Kopiere Platzhalter wp-config.php in wp_app Container..."
-echo "<?php // placeholder to block auto-generation ?>" > temp-wp-config.php
 docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
 
+# Datei-Berechtigungen setzen
 echo "🔧 Setze korrekte Rechte auf wp-config.php im Container..."
 docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
 docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
 
+# Datei lokal löschen und im Container sicher entfernen
 echo "🧹 Entferne Platzhalter-Datei lokal + im Container (vor WP-CLI)..."
 rm -f temp-wp-config.php
-docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
+docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
+
+# Schreibrechte nochmal sicherstellen
+echo "🔧 Setze Schreibrechte auf /var/www/html (wordpress)..."
 docker compose exec -T wordpress chmod u+w /var/www/html
 
+# Datenbankverbindung abwarten
 echo "⏳ Warte auf Datenbankverbindung..."
 for i in {1..30}; do
   if docker compose exec -T db mysql -u"${DB_USER}" -p"${DB_PASS}" -e "SELECT 1;" "${DB_NAME}" &>/dev/null; then
@@ -69,9 +74,7 @@ for i in {1..30}; do
   fi
 done
 
-echo "🔧 Setze Schreibrechte auf /var/www/html (wordpress)..."
-docker compose exec -T wordpress chmod u+w /var/www/html
-
+# WP-CLI erzeugt wp-config.php
 echo "📄 Generiere neue wp-config.php via WP-CLI..."
 docker compose exec -T wpcli wp core config \
   --dbname="${DB_NAME}" \
