@@ -87,20 +87,6 @@ fi
 echo "🔐 Setze sichere Rechte für wp-config.php..."
 docker compose exec -T wordpress chmod 640 /var/www/html/wp-config.php || true
 
-# WordPress installieren (falls noch nicht)
-if docker compose exec -T wpcli wp core is-installed; then
-  echo "ℹ️ WordPress ist bereits installiert."
-else
-  echo "⚙️ WordPress wird jetzt installiert..."
-  docker compose exec -T wpcli env HTTP_HOST=localhost wp core install \
-    --url="http://${DOMAIN_IP}:${PORT}" \
-    --title="${WP_TITLE}" \
-    --admin_user="${WP_ADMIN_USER}" \
-    --admin_password="${WP_ADMIN_PASS}" \
-    --admin_email="${WP_ADMIN_EMAIL}"
-  echo "✅ WordPress Installation abgeschlossen!"
-fi
-
 # Erfolgsmeldung
 echo ""
 echo "🎉 WordPress wurde erfolgreich eingerichtet!"
