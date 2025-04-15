@@ -15,3 +15,7 @@ docker compose run -d \
   wordpress:cli
 
 echo "✅ wpcli läuft jetzt wieder als www-data (UID 82)."
+
+# 🧹 Entferne phpinfo-Datei, falls vorhanden
+echo "🧹 Entferne phpinfo-Testdatei (falls vorhanden)..."
+docker compose exec -T wordpress rm -f /var/www/html/phpinfo.php || true

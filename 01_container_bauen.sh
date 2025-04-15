@@ -46,3 +46,9 @@ rm -f temp-wp-config.php
 docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
 
 echo "✅ Container laufen. Jetzt kannst du '02_Wordpress_installieren.sh' ausführen."
+
+# Optional: phpinfo-Testdatei erzeugen (nur bei gesetztem Flag)
+if [ "${DEBUG_PHPINFO}" = "true" ]; then
+  echo "🧪 Erzeuge phpinfo()-Testseite..."
+  docker compose exec -T wordpress sh -c 'echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php'
+fi
