@@ -49,7 +49,7 @@ docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
 
 # Platzhalter-Datei vor WP-CLI löschen
 echo "🧹 Entferne Platzhalter-Datei im Container (vor WP-CLI)..."
-docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
+docker compose exec -T wpcli su -s /bin/sh www-data -c 'rm -f /var/www/html/wp-config.php' || true
 
 # Datenbankverbindung abwarten
 echo "⏳ Warte auf Datenbankverbindung..."
@@ -63,7 +63,10 @@ for i in {1..30}; do
   fi
 done
 
-# WP-CLI erzeugt wp-config.php
+# Schreibrechte auf wp-config.php erweitern (falls vorhanden)
+echo "🔧 Setze Schreibrechte auf wp-config.php (für WP-CLI)..."
+docker compose exec -T wordpress chmod 666 /var/www/html/wp-config.php || true
+
 echo "📄 Generiere neue wp-config.php via WP-CLI..."
 docker compose exec -T wpcli wp core config \
   --dbname="${DB_NAME}" \
@@ -71,6 +74,10 @@ docker compose exec -T wpcli wp core config \
   --dbpass="${DB_PASS}" \
   --dbhost="db:3306" \
   --skip-check
+
+# Rechte wieder einschränken
+echo "🔐 Setze sichere Rechte für wp-config.php..."
+docker compose exec -T wordpress chmod 640 /var/www/html/wp-config.php || true
 
 # WordPress installieren (falls noch nicht)
 if docker compose exec -T wpcli wp core is-installed; then
