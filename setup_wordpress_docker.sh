@@ -48,19 +48,15 @@ docker compose up -d
 echo "📄 Kopiere Platzhalter wp-config.php in wp_app Container..."
 docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
 
-# Datei-Berechtigungen setzen
-echo "🔧 Setze korrekte Rechte auf wp-config.php im Container..."
+# Platzhalter-Datei lokal entfernen
+rm -f temp-wp-config.php
+
+# Rechte setzen und Datei sicher entfernen, bevor WP-CLI sie ersetzt
+echo "🔧 Setze Rechte + entferne Platzhalter wp-config.php im Container (vor WP-CLI)..."
+docker compose exec -T wordpress chmod u+w /var/www/html
 docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
 docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
-
-# Datei lokal löschen und im Container sicher entfernen
-echo "🧹 Entferne Platzhalter-Datei lokal + im Container (vor WP-CLI)..."
-rm -f temp-wp-config.php
 docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
-
-# Schreibrechte nochmal sicherstellen
-echo "🔧 Setze Schreibrechte auf /var/www/html (wordpress)..."
-docker compose exec -T wordpress chmod u+w /var/www/html
 
 # Datenbankverbindung abwarten
 echo "⏳ Warte auf Datenbankverbindung..."
