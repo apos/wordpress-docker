@@ -12,13 +12,13 @@ docker compose run -d \
   --name wp_cli \
   --user "82" \
   --entrypoint "tail -f /dev/null" \
-  wordpress:cli
+  wpcli
 
 echo "✅ wpcli läuft jetzt wieder als www-data (UID 82)."
 
 # 🧹 Entferne phpinfo-Datei, falls vorhanden
 echo "🧹 Entferne phpinfo-Testdatei (falls vorhanden)..."
-docker compose exec -T wordpress rm -f /var/www/html/phpinfo.php || true
+docker compose exec -T wp_app rm -f /var/www/html/phpinfo.php || true
 
 # 🔐 Setze Besitzer und Rechte auf wp-config.php im Anwendungscontainer
 echo "🔐 Setze Besitzer von wp-config.php auf www-data..."
