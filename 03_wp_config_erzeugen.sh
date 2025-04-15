@@ -20,11 +20,11 @@ for i in {1..30}; do
   fi
 done
 
-echo "🔧 Lösche alte wp-config.php und setze Rechte für www-data..."
-docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
-docker compose exec -T wordpress touch /var/www/html/wp-config.php
-docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
-docker compose exec -T wordpress chmod 666 /var/www/html/wp-config.php
+echo "🧹 Entferne alte wp-config.php im wpcli-Container (falls vorhanden)..."
+docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
+
+echo "🔧 Setze Schreibrechte auf /var/www/html für wp-config.php..."
+docker compose exec -T wpcli chmod 777 /var/www/html || true
 
 echo "🔧 Erzeuge neue wp-config.php via WP-CLI..."
 docker compose exec -T wpcli wp config create \
@@ -35,6 +35,6 @@ docker compose exec -T wpcli wp config create \
   --skip-check
 
 echo "🔐 Setze sichere Rechte für wp-config.php..."
-docker compose exec -T wordpress chmod 640 /var/www/html/wp-config.php || true
+docker compose exec -T wpcli chmod 640 /var/www/html/wp-config.php || true
 
 echo "✅ wp-config.php wurde erfolgreich erzeugt."
