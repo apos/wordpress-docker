@@ -43,7 +43,7 @@ docker compose up -d
 
 # Platzhalter-Datei direkt im Container erzeugen
 echo "📄 Erzeuge Platzhalter wp-config.php direkt im Container..."
-docker compose exec -T wordpress sh -c 'echo "<?php // placeholder ?>" > /var/www/html/wp-config.php'
+docker compose exec -T wordpress sh -c 'su -s /bin/sh www-data -c "echo \"<?php // placeholder ?>\" > /var/www/html/wp-config.php"'
 docker compose exec -T wordpress chown www-data:www-data /var/www/html/wp-config.php
 docker compose exec -T wordpress chmod u+w /var/www/html/wp-config.php
 
