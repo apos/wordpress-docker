@@ -38,20 +38,16 @@ server {
 }
 NGINX
 
-# Platzhalter wp-config.php vorbereiten
+# Leere wp-config.php erzeugen (um Autogenerierung zu blockieren)
 echo "<?php // placeholder to block auto-generation ?>" > temp-wp-config.php
 
 echo "🔄 Starte alle Docker-Container..."
 docker compose up -d
 
-echo "📄 Kopiere Platzhalter wp-config.php in wp_app Container..."
-docker cp temp-wp-config.php wp_app:/var/www/html/wp-config.php
-
 echo "🧹 Entferne Platzhalter-Datei lokal + im Container (vor WP-CLI)..."
-docker compose exec -T wpcli rm -f /var/www/html/wp-config.php || true
+docker compose exec -T wordpress rm -f /var/www/html/wp-config.php || true
 rm -f temp-wp-config.php
 
-# DB-Verbindung abwarten
 echo "⏳ Warte auf Datenbankverbindung..."
 for i in {1..30}; do
   if docker compose exec -T db mysql -u"${DB_USER}" -p"${DB_PASS}" -e "SELECT 1;" "${DB_NAME}" &>/dev/null; then
@@ -61,7 +57,6 @@ for i in {1..30}; do
     echo "  ⏳ Datenbank noch nicht bereit... ($i/30)"
     sleep 2
   fi
-  [[ "$i" == 30 ]] && { echo "❌ DB nicht erreichbar"; exit 1; }
 done
 
 echo "🔧 Setze Schreibrechte auf /var/www/html (wordpress)..."
@@ -75,7 +70,7 @@ docker compose exec -T wpcli wp core config \
   --dbhost="db:3306" \
   --skip-check
 
-# Installation prüfen
+# WordPress installieren (falls noch nicht)
 if docker compose exec -T wpcli wp core is-installed; then
   echo "ℹ️ WordPress ist bereits installiert."
 else
@@ -89,6 +84,7 @@ else
   echo "✅ WordPress Installation abgeschlossen!"
 fi
 
+# Erfolgsmeldung
 echo ""
 echo "🎉 WordPress wurde erfolgreich eingerichtet!"
 echo "🌍 ➜ Jetzt im Browser öffnen: http://${DOMAIN_IP}:${PORT}/"

@@ -23,6 +23,7 @@ services:
         define('WP_AUTO_UPDATE_CORE', true);
     volumes:
       - wp_data:/var/www/html
+      - ./temp-wp-config.php:/var/www/html/wp-config.php
     expose:
       - "9000"
 
