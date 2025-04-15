@@ -60,6 +60,9 @@ done
 echo "🔧 Setze Schreibrechte auf wp-config.php (für WP-CLI)..."
 docker compose exec -T wordpress chmod 666 /var/www/html/wp-config.php || true
 
+echo "🔍 Prüfe, ob wp-config.php noch existiert (vor WP-CLI)..."
+docker compose exec -T wordpress ls -l /var/www/html/wp-config.php || echo "✅ Keine Datei vorhanden"
+
 echo "📄 Generiere neue wp-config.php via WP-CLI..."
 docker compose exec -T wpcli wp core config \
   --dbname="${DB_NAME}" \
